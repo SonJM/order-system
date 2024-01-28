@@ -72,3 +72,7 @@
   - OrderItem
     - orderitem목록조회(/orderitems/{id}) 
       - order_id를 입력받아 orderitems데이터 return
+
+
+### Vue 연결
+npm 
