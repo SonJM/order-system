@@ -10,6 +10,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 import javax.persistence.*;
 import com.practice.ordersystem.domain.Ordering.Ordering;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -38,5 +39,5 @@ public class Member {
     private LocalDateTime updatedTime;
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Ordering> orders;
+    private List<Ordering> orders = new ArrayList<>();
 }

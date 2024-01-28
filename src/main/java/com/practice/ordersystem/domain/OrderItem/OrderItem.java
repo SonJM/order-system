@@ -1,9 +1,11 @@
 package com.practice.ordersystem.domain.OrderItem;
 
+import com.practice.ordersystem.domain.Member.Member;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.aspectj.weaver.ast.Or;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import com.practice.ordersystem.domain.Item.Item;
@@ -12,6 +14,7 @@ import javax.persistence.*;
 
 import com.practice.ordersystem.domain.Ordering.Ordering;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Entity
@@ -24,13 +27,13 @@ public class OrderItem {
     private Long id;
     private int quantity;
 
-    @JoinColumn(name = "item_id", nullable = false)
-    @ManyToOne(fetch = FetchType.LAZY)
-    private Item item;
-
     @JoinColumn(name = "ordering_id", nullable = false)
     @ManyToOne(fetch = FetchType.LAZY)
     private Ordering ordering;
+
+    @JoinColumn(name = "item_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Item item;
 
     @CreationTimestamp
     @Column(columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
@@ -39,4 +42,20 @@ public class OrderItem {
     @UpdateTimestamp
     @Column(columnDefinition = "TIMESTAMP ON UPDATE CURRENT_TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime updatedTime;
+
+    public void setOrdering(Ordering ordering) {
+        this.ordering = ordering;
+        // 무한루프에 빠지지 않도록 체크
+        if(!ordering.getOrderItemList().contains(this)) {
+            ordering.getOrderItemList().add(this);
+        }
+    }
+
+    public void setItem(Item item) {
+        this.item = item;
+        // 무한루프에 빠지지 않도록 체크
+        if(!item.getOrderItemList().contains(this)) {
+            ordering.getOrderItemList().add(this);
+        }
+    }
 }
