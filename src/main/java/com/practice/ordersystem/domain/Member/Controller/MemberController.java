@@ -1,7 +1,7 @@
 package com.practice.ordersystem.domain.Member.Controller;
 
-import com.practice.ordersystem.domain.Member.DTO.MemberDetailResDto;
 import com.practice.ordersystem.domain.Member.DTO.MemberListResDto;
+import com.practice.ordersystem.domain.Member.DTO.MemberOrderListResDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -33,7 +33,6 @@ public class MemberController {
     }
 
     @GetMapping("/members")
-    @CrossOrigin(originPatterns = "*")
     public ResponseEntity<Object> memberList(){
         try{
             List<MemberListResDto> memberListResDtoList = memberService.findAll();
@@ -44,11 +43,10 @@ public class MemberController {
     }
 
     @GetMapping("/member/{id}/orders")
-    @CrossOrigin(originPatterns = "*")
     public ResponseEntity<Object> findMember(@PathVariable Long id){
         try{
-            MemberDetailResDto memberDetailResDto = memberService.findById(id);
-            return ResponseEntity.status(HttpStatus.OK).body(memberDetailResDto);
+            List<MemberOrderListResDto> memberOrderListResDtoList = memberService.findById(id);
+            return ResponseEntity.status(HttpStatus.OK).body(memberOrderListResDtoList);
         } catch(EntityNotFoundException e){
             return ResponseEntity.status(HttpStatus.NO_CONTENT).body(e.getMessage());
         }

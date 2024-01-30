@@ -61,8 +61,8 @@
     - 주문하기(/order/new)
       - reqDto 
         - <span style="color: red">Long</span> memberId
-        - List<Long>itemId
-        - List<Long> count
+        - List\<Long\> itemId
+        - List\<Long\> count
         - 주문시 ordering테이블 1건 insert 및 상태값 ORDERED 세팅
       - 주문시 order_item테이블에 item과 수량별로 rows insert
       - item별로 수량만큼 item테이블의 stockQuantity 감소

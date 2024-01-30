@@ -28,7 +28,7 @@ public class Ordering {
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
-    @OneToMany(mappedBy = "ordering", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "ordering", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
     private List<OrderItem> orderItemList = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)

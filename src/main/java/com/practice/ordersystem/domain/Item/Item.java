@@ -27,7 +27,7 @@ public class Item {
     int stockQuantity;
     String imagePath;
 
-    @OneToMany(mappedBy = "item", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "item", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
     private List<OrderItem> orderItemList = new ArrayList<>();
 
     @CreationTimestamp
@@ -39,10 +39,14 @@ public class Item {
     private LocalDateTime updatedTime;
 
     public boolean updateItem(int count){
-        if(count < this.stockQuantity){
+        if(count <= this.stockQuantity){
             this.stockQuantity -= count;
             return true;
         }
         return false;
+    }
+
+    public void rollbackItem(int count){
+        this.stockQuantity += count;
     }
 }

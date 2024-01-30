@@ -4,9 +4,10 @@ import com.practice.ordersystem.domain.Item.Item;
 import com.practice.ordersystem.domain.Item.Repository.ItemRepository;
 import com.practice.ordersystem.domain.Member.Member;
 import com.practice.ordersystem.domain.Member.Repository.MemberRepository;
-import com.practice.ordersystem.domain.Member.Role;
 import com.practice.ordersystem.domain.OrderItem.OrderItem;
+import com.practice.ordersystem.domain.OrderItem.Repository.OrderItemRepository;
 import com.practice.ordersystem.domain.Ordering.DTO.OrderCreateReqDto;
+import com.practice.ordersystem.domain.Ordering.DTO.OrderItemListReqDto;
 import com.practice.ordersystem.domain.Ordering.DTO.OrderListResDto;
 import com.practice.ordersystem.domain.Ordering.OrderStatus;
 import com.practice.ordersystem.domain.Ordering.Ordering;
@@ -25,12 +26,14 @@ public class OrderService {
     private final MemberRepository memberRepository;
     private final OrderRepository orderRepository;
     private final ItemRepository itemRepository;
+    private final OrderItemRepository orderItemRepository;
 
     @Autowired
-    public OrderService(MemberRepository memberRepository, OrderRepository orderRepository, ItemRepository itemRepository) {
+    public OrderService(MemberRepository memberRepository, OrderRepository orderRepository, ItemRepository itemRepository, OrderItemRepository orderItemRepository) {
         this.memberRepository = memberRepository;
         this.orderRepository = orderRepository;
         this.itemRepository = itemRepository;
+        this.orderItemRepository = orderItemRepository;
     }
 
     public List<OrderListResDto> findAll() {
@@ -56,26 +59,28 @@ public class OrderService {
                 .status(OrderStatus.ORDERED)
                 .member(member)
                 .build();
+        orderRepository.save(ordering);
 
-        List<OrderItem> orderItemList = new ArrayList<>();
-        for(int i=0; i<orderCreateReqDto.getItemId().size(); i++){
-            Item item = itemRepository.findById(orderCreateReqDto.getItemId().get(i)).orElseThrow(EntityNotFoundException::new);
-            if(!item.updateItem(orderCreateReqDto.getCount().get(i))) {
+        for(OrderItemListReqDto orderItemListReqDto : orderCreateReqDto.getItems()) {
+            Item item = itemRepository.findById(orderItemListReqDto.getItemId()).orElseThrow(EntityNotFoundException::new);
+            if(!item.updateItem(orderItemListReqDto.getCount())) {
                 throw new Exception("수량이 부족합니다");
             }
             OrderItem orderItem = OrderItem.builder()
                     .item(item)
-                    .quantity(orderCreateReqDto.getCount().get(i))
+                    .quantity(orderItemListReqDto.getCount())
                     .ordering(ordering)
                     .build();
-            orderItemList.add(orderItem);
+            orderItemRepository.save(orderItem);
         }
-
-        orderRepository.save(ordering);
     }
 
     public void cancelOrder(Long id) throws EntityNotFoundException{
         Ordering ordering = orderRepository.findById(id).orElseThrow(EntityNotFoundException::new);
         ordering.changeStatus();
+        List<OrderItem> orderItemList = ordering.getOrderItemList();
+        for(OrderItem orderItem : orderItemList){
+            orderItem.getItem().rollbackItem(orderItem.getQuantity());
+        }
     }
 }

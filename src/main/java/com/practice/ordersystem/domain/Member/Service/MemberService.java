@@ -1,8 +1,10 @@
 package com.practice.ordersystem.domain.Member.Service;
 
-import com.practice.ordersystem.domain.Member.DTO.MemberDetailResDto;
 import com.practice.ordersystem.domain.Member.DTO.MemberListResDto;
+import com.practice.ordersystem.domain.Member.DTO.MemberOrderListResDto;
 import com.practice.ordersystem.domain.Member.Member;
+import com.practice.ordersystem.domain.Ordering.Ordering;
+import com.practice.ordersystem.domain.Ordering.Repository.OrderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.practice.ordersystem.domain.Member.Repository.MemberRepository;
@@ -19,10 +21,12 @@ import java.util.List;
 @Transactional
 public class MemberService {
     private final MemberRepository memberRepository;
+    private final OrderRepository orderRepository;
 
     @Autowired
-    public MemberService(MemberRepository memberRepository) {
+    public MemberService(MemberRepository memberRepository, OrderRepository orderRepository) {
         this.memberRepository = memberRepository;
+        this.orderRepository = orderRepository;
     }
 
 
@@ -65,19 +69,18 @@ public class MemberService {
         return memberListResDtoList;
     }
 
-    public MemberDetailResDto findById(Long id) throws EntityNotFoundException{
+    public List<MemberOrderListResDto> findById(Long id) throws EntityNotFoundException{
         Member member = memberRepository.findById(id).orElseThrow(EntityNotFoundException::new);
-        String role = "";
-        if(member.getRole().equals(Role.ADMIN)) role = "관리자";
-        else role = "유저";
-        return MemberDetailResDto.builder()
-                .name(member.getName())
-                .email(member.getEmail())
-                .address(member.getAddress())
-                .createdTime(member.getCreatedTime())
-                .role(role)
-                // Ordering 엔티티의 member_id와 매핑
-                .orderingList(member.getOrders())
-                .build();
+        List<Ordering> orderingList = orderRepository.findAllByMemberId(id);
+        List<MemberOrderListResDto> memberDetailResDtos = new ArrayList<>();
+        for(Ordering ordering : orderingList){
+            MemberOrderListResDto memberDetailResDto = MemberOrderListResDto.builder()
+                    .name(member.getName())
+                    .orderId(ordering.getId())
+                    .orderStatus(ordering.getStatus().name())
+                    .build();
+            memberDetailResDtos.add(memberDetailResDto);
+        }
+        return memberDetailResDtos;
     }
 }

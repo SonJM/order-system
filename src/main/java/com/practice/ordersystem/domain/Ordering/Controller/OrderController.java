@@ -1,8 +1,10 @@
 package com.practice.ordersystem.domain.Ordering.Controller;
 
+import com.practice.ordersystem.domain.OrderItem.Service.OrderItemService;
 import com.practice.ordersystem.domain.Ordering.DTO.OrderCreateReqDto;
 import com.practice.ordersystem.domain.Ordering.DTO.OrderListResDto;
 import com.practice.ordersystem.domain.Ordering.Service.OrderService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.persistence.EntityNotFoundException;
 import java.util.List;
 
+@Slf4j
 @RestController
 public class OrderController {
     private final OrderService orderService;
@@ -21,7 +24,6 @@ public class OrderController {
     }
 
     @GetMapping("/orders")
-    @CrossOrigin(originPatterns = "*")
     public ResponseEntity<Object> orderList(){
         try{
             List<OrderListResDto> listResDtoList = orderService.findAll();
@@ -32,9 +34,9 @@ public class OrderController {
     }
 
     @PostMapping("/order/new")
-    @CrossOrigin(originPatterns = "*")
     public HttpStatus newOrder(@RequestBody OrderCreateReqDto orderCreateReqDto){
         try{
+            log.info(orderCreateReqDto.toString());
             orderService.save(orderCreateReqDto);
             return HttpStatus.OK;
         } catch(Exception e){
