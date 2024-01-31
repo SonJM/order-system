@@ -1,6 +1,5 @@
 package com.practice.ordersystem.domain.Ordering.Controller;
 
-import com.practice.ordersystem.domain.OrderItem.Service.OrderItemService;
 import com.practice.ordersystem.domain.Ordering.DTO.OrderCreateReqDto;
 import com.practice.ordersystem.domain.Ordering.DTO.OrderListResDto;
 import com.practice.ordersystem.domain.Ordering.Service.OrderService;

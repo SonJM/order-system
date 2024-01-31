@@ -2,6 +2,8 @@ package com.practice.ordersystem.domain.Member.Controller;
 
 import com.practice.ordersystem.domain.Member.DTO.MemberListResDto;
 import com.practice.ordersystem.domain.Member.DTO.MemberOrderListResDto;
+import com.practice.ordersystem.domain.Member.Member;
+import com.practice.ordersystem.domain.common.ResponseDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,12 +25,12 @@ public class MemberController {
 
     @PostMapping("/member/new")
     @CrossOrigin(originPatterns = "*")
-    public HttpStatus createMember(@RequestBody MemberCreateReqDto memberCreateReqDto){
+    public ResponseEntity<ResponseDto> createMember(@RequestBody MemberCreateReqDto memberCreateReqDto){
         try{
-            memberService.save(memberCreateReqDto);
-            return HttpStatus.OK;
+            Member member = memberService.save(memberCreateReqDto);
+            return new ResponseEntity<>(new ResponseDto(HttpStatus.CREATED, "mamber successfully created", member), HttpStatus.CREATED);
         } catch(IllegalArgumentException e){
-            return HttpStatus.BAD_REQUEST;
+            return null;
         }
     }
 

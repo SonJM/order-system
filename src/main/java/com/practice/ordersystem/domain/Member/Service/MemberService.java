@@ -1,5 +1,6 @@
 package com.practice.ordersystem.domain.Member.Service;
 
+import com.practice.ordersystem.domain.Member.Address;
 import com.practice.ordersystem.domain.Member.DTO.MemberListResDto;
 import com.practice.ordersystem.domain.Member.DTO.MemberOrderListResDto;
 import com.practice.ordersystem.domain.Member.Member;
@@ -30,22 +31,20 @@ public class MemberService {
     }
 
 
-    public void save(MemberCreateReqDto memberCreateReqDto){
-        if(memberRepository.findByEmail(memberCreateReqDto.getEmail()).isPresent()){
-            throw new IllegalArgumentException("이메일이 중복입니다");
-        }
-        Role role = null;
-        if(memberCreateReqDto.getRole().equals("admin")){
-            role = Role.ADMIN;
-        } else role = Role.USER;
+    public Member save(MemberCreateReqDto memberCreateReqDto){
+        Address address = new Address(
+                memberCreateReqDto.getCity(),
+                memberCreateReqDto.getStreet(),
+                memberCreateReqDto.getZipcode()
+        );
         Member member = Member.builder()
                 .name(memberCreateReqDto.getName())
                 .email(memberCreateReqDto.getEmail())
-                .address(memberCreateReqDto.getAddress())
                 .password(memberCreateReqDto.getPassword())
-                .role(role)
+                .address(address)
+                .role(Role.USER)
                 .build();
-       memberRepository.save(member);
+        return memberRepository.save(member);
     }
 
     public List<MemberListResDto> findAll() throws NullPointerException{

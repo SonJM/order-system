@@ -1,7 +1,6 @@
 package com.practice.ordersystem.domain.OrderItem.Controller;
 
 import com.practice.ordersystem.domain.OrderItem.DTO.OrderItemListResDto;
-import com.practice.ordersystem.domain.OrderItem.OrderItem;
 import com.practice.ordersystem.domain.OrderItem.Service.OrderItemService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -12,7 +11,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.persistence.EntityNotFoundException;
-import javax.swing.text.html.parser.Entity;
 import java.util.List;
 
 @RestController

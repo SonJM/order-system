@@ -1,11 +1,7 @@
 package com.practice.ordersystem.domain.OrderItem.Service;
 
-import com.practice.ordersystem.domain.Item.Item;
-import com.practice.ordersystem.domain.Item.Repository.ItemRepository;
 import com.practice.ordersystem.domain.OrderItem.DTO.OrderItemListResDto;
 import com.practice.ordersystem.domain.OrderItem.OrderItem;
-import com.practice.ordersystem.domain.OrderItem.Repository.OrderItemRepository;
-import com.practice.ordersystem.domain.Ordering.DTO.OrderItemListReqDto;
 import com.practice.ordersystem.domain.Ordering.Ordering;
 import com.practice.ordersystem.domain.Ordering.Repository.OrderRepository;
 import lombok.extern.slf4j.Slf4j;
