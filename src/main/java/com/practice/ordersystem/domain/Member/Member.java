@@ -1,5 +1,6 @@
 package com.practice.ordersystem.domain.Member;
 
+import com.practice.ordersystem.domain.Member.DTO.MemberCreateReqDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -9,6 +10,8 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
 import com.practice.ordersystem.domain.Ordering.Ordering;
+import org.springframework.web.bind.annotation.RequestBody;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -45,4 +48,19 @@ public class Member {
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
     private List<Ordering> orders = new ArrayList<>();
+
+    public static Member toEntity(MemberCreateReqDto memberCreateReqDto){
+        Address address = new Address(
+                memberCreateReqDto.getCity(),
+                memberCreateReqDto.getStreet(),
+                memberCreateReqDto.getZipcode()
+        );
+        return Member.builder()
+                .name(memberCreateReqDto.getName())
+                .email(memberCreateReqDto.getEmail())
+                .password(memberCreateReqDto.getPassword())
+                .address(address)
+                .role(Role.USER)
+                .build();
+    }
 }

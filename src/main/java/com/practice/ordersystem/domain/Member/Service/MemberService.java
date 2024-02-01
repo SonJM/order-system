@@ -1,50 +1,50 @@
 package com.practice.ordersystem.domain.Member.Service;
 
 import com.practice.ordersystem.domain.Member.Address;
-import com.practice.ordersystem.domain.Member.DTO.MemberListResDto;
-import com.practice.ordersystem.domain.Member.DTO.MemberOrderListResDto;
+import com.practice.ordersystem.domain.Member.DTO.*;
 import com.practice.ordersystem.domain.Member.Member;
 import com.practice.ordersystem.domain.Ordering.Ordering;
 import com.practice.ordersystem.domain.Ordering.Repository.OrderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.practice.ordersystem.domain.Member.Repository.MemberRepository;
 
 import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
-import com.practice.ordersystem.domain.Member.DTO.MemberCreateReqDto;
+
 import com.practice.ordersystem.domain.Member.Role;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
 public class MemberService {
     private final MemberRepository memberRepository;
     private final OrderRepository orderRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public MemberService(MemberRepository memberRepository, OrderRepository orderRepository) {
+    public MemberService(MemberRepository memberRepository, OrderRepository orderRepository, PasswordEncoder passwordEncoder) {
         this.memberRepository = memberRepository;
         this.orderRepository = orderRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
 
     public Member save(MemberCreateReqDto memberCreateReqDto){
-        Address address = new Address(
-                memberCreateReqDto.getCity(),
-                memberCreateReqDto.getStreet(),
-                memberCreateReqDto.getZipcode()
-        );
-        Member member = Member.builder()
-                .name(memberCreateReqDto.getName())
-                .email(memberCreateReqDto.getEmail())
-                .password(memberCreateReqDto.getPassword())
-                .address(address)
-                .role(Role.USER)
-                .build();
+        memberCreateReqDto.setPassword(passwordEncoder.encode(memberCreateReqDto.getPassword()));
+        Member member = Member.toEntity(memberCreateReqDto);
         return memberRepository.save(member);
+    }
+
+    public List<MemberResDto> findAllStream(){
+        List<Member> memberResDtos = memberRepository.findAll();
+        return memberResDtos.stream().map(m->MemberResDto.toMemberResponseDto(m)).collect(Collectors.toList());
     }
 
     public List<MemberListResDto> findAll() throws NullPointerException{
@@ -81,5 +81,24 @@ public class MemberService {
             memberDetailResDtos.add(memberDetailResDto);
         }
         return memberDetailResDtos;
+    }
+
+    public MemberResDto findMyInfo(){
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+        Member member = memberRepository.findByEmail(email).orElseThrow(EntityNotFoundException::new);
+        return MemberResDto.toMemberResponseDto(member);
+    }
+
+    public Member login(LoginReqDto loginReqDto) throws IllegalArgumentException{
+        // email 존재 여부
+        Member member = memberRepository.findByEmail(loginReqDto.getEmail())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 이메일입니다."));
+
+        // password 일치여부
+        if(!passwordEncoder.matches(loginReqDto.getPassword(), member.getPassword())){
+            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+        }
+        return member;
     }
 }
