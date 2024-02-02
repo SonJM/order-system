@@ -28,11 +28,13 @@ public class Ordering {
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
-    @OneToMany(mappedBy = "ordering", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "ordering", cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
+    @Builder.Default
     private List<OrderItem> orderItemList = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
-    private OrderStatus status;
+    @Builder.Default
+    private OrderStatus status = OrderStatus.ORDERED;
 
     @CreationTimestamp
     @Column(columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
@@ -42,6 +44,11 @@ public class Ordering {
     @Column(columnDefinition = "TIMESTAMP ON UPDATE CURRENT_TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime updatedTime;
 
+    @Builder
+    Ordering(Member member){
+
+    }
+
     public void setMember(Member member) {
         this.member = member;
         // 무한루프에 빠지지 않도록 체크
@@ -49,7 +56,6 @@ public class Ordering {
             member.getOrders().add(this);
         }
     }
-
     public void changeStatus(){
         if(this.status == OrderStatus.ORDERED)
             this.status = OrderStatus.CANCELED;

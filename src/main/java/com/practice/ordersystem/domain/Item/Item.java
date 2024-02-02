@@ -21,11 +21,14 @@ import java.util.List;
 public class Item {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
-    String name;
-    int price;
-    int stockQuantity;
-    String imagePath;
+    private Long id;
+    private String name;
+    private String category;
+    private int price;
+    private int stockQuantity;
+    private String imagePath;
+    @Builder.Default
+    private String delYn = "N";
 
     @OneToMany(mappedBy = "item", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
     private List<OrderItem> orderItemList = new ArrayList<>();
@@ -46,7 +49,22 @@ public class Item {
         return false;
     }
 
+    public void updateItem(String name, String category, int price, int stockQuantity, String imagePath){
+        this.name = name;
+        this.category = category;
+        this.price = price;
+        this.stockQuantity = stockQuantity;
+        this.imagePath = imagePath;
+    }
+
     public void rollbackItem(int count){
         this.stockQuantity += count;
+    }
+    public void setImagesPath(String imagePath){
+        this.imagePath = imagePath;
+    }
+
+    public void deleteItem() {
+        this.delYn = "Y";
     }
 }

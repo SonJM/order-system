@@ -6,9 +6,8 @@ import com.practice.ordersystem.domain.Member.Member;
 import com.practice.ordersystem.domain.Member.Repository.MemberRepository;
 import com.practice.ordersystem.domain.OrderItem.OrderItem;
 import com.practice.ordersystem.domain.OrderItem.Repository.OrderItemRepository;
-import com.practice.ordersystem.domain.Ordering.DTO.OrderCreateReqDto;
-import com.practice.ordersystem.domain.Ordering.DTO.OrderItemListReqDto;
-import com.practice.ordersystem.domain.Ordering.DTO.OrderListResDto;
+import com.practice.ordersystem.domain.Ordering.DTO.OrderReqDto;
+import com.practice.ordersystem.domain.Ordering.DTO.OrderResDto;
 import com.practice.ordersystem.domain.Ordering.OrderStatus;
 import com.practice.ordersystem.domain.Ordering.Ordering;
 import com.practice.ordersystem.domain.Ordering.Repository.OrderRepository;
@@ -36,43 +35,43 @@ public class OrderService {
         this.orderItemRepository = orderItemRepository;
     }
 
-    public List<OrderListResDto> findAll() {
+    public List<OrderResDto> findAll() {
         List<Ordering> orderings = orderRepository.findAll();
-        List<OrderListResDto> orderListResDtos = new ArrayList<>();
+        List<OrderResDto> orderResDtos = new ArrayList<>();
         for(Ordering ordering : orderings){
             String status = "";
             if(ordering.getStatus().equals(OrderStatus.CANCELED)) status = "취소";
             else status = "진행중";
-            OrderListResDto orderListResDto = OrderListResDto.builder()
+            OrderResDto orderResDto = OrderResDto.builder()
                     .memberId(ordering.getMember().getId())
                     .status(status)
                     .build();
-            orderListResDtos.add(orderListResDto);
+            orderResDtos.add(orderResDto);
         }
-        return orderListResDtos;
+        return orderResDtos;
     }
 
-    public void save(OrderCreateReqDto orderCreateReqDto) throws Exception {
-        Member member = memberRepository.findById(orderCreateReqDto.getMemberId()).orElse(null);
-
+    public Ordering save(OrderReqDto orderReqDto, String email) throws EntityNotFoundException, IllegalArgumentException {
+        Member member = memberRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("등록되지 않은 유저입니다."));
         Ordering ordering = Ordering.builder()
                 .status(OrderStatus.ORDERED)
                 .member(member)
                 .build();
         orderRepository.save(ordering);
 
-        for(OrderItemListReqDto orderItemListReqDto : orderCreateReqDto.getItems()) {
-            Item item = itemRepository.findById(orderItemListReqDto.getItemId()).orElseThrow(EntityNotFoundException::new);
-            if(!item.updateItem(orderItemListReqDto.getCount())) {
-                throw new Exception("수량이 부족합니다");
+        for(OrderReqDto.OrderReqItemDto orderReqItemDto : orderReqDto.getOrderReqItemDtos()) {
+            Item item = itemRepository.findById(orderReqItemDto.getItemId()).orElseThrow(EntityNotFoundException::new);
+            if(!item.updateItem(orderReqItemDto.getCount())) {
+                throw new IllegalArgumentException("수량이 부족합니다");
             }
             OrderItem orderItem = OrderItem.builder()
                     .item(item)
-                    .quantity(orderItemListReqDto.getCount())
+                    .quantity(orderReqItemDto.getCount())
                     .ordering(ordering)
                     .build();
             orderItemRepository.save(orderItem);
         }
+        return ordering;
     }
 
     public void cancelOrder(Long id) throws EntityNotFoundException{

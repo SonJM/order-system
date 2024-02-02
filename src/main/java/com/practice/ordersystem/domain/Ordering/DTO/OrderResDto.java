@@ -5,13 +5,14 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
+import java.time.LocalDateTime;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class OrderCreateReqDto {
+public class OrderResDto {
     private Long memberId;
-    private List<OrderItemListReqDto> items;
+    private String status;
+    private LocalDateTime createdTime;
 }

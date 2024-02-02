@@ -65,7 +65,7 @@ public class MemberController {
         Member member = memberService.login(loginReqDto);
 
         // 토큰 생성
-        String jwtToken = jwtTokenProvider.createToken(loginReqDto.getEmail(), member.getRole().name());
+        String jwtToken = jwtTokenProvider.createToken(loginReqDto.getEmail(), member.getRole().toString());
 
         Map<String, Object> member_info = new HashMap<>();
         member_info.put("id", member.getId());

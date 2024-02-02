@@ -1,8 +1,10 @@
 package com.practice.ordersystem.domain.Ordering.Controller;
 
-import com.practice.ordersystem.domain.Ordering.DTO.OrderCreateReqDto;
-import com.practice.ordersystem.domain.Ordering.DTO.OrderListResDto;
+import com.practice.ordersystem.domain.Ordering.DTO.OrderReqDto;
+import com.practice.ordersystem.domain.Ordering.DTO.OrderResDto;
+import com.practice.ordersystem.domain.Ordering.Ordering;
 import com.practice.ordersystem.domain.Ordering.Service.OrderService;
+import com.practice.ordersystem.domain.common.ResponseDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -10,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.persistence.EntityNotFoundException;
+import java.security.Principal;
 import java.util.List;
 
 @Slf4j
@@ -25,7 +28,7 @@ public class OrderController {
     @GetMapping("/orders")
     public ResponseEntity<Object> orderList(){
         try{
-            List<OrderListResDto> listResDtoList = orderService.findAll();
+            List<OrderResDto> listResDtoList = orderService.findAll();
             return ResponseEntity.status(HttpStatus.OK).body(listResDtoList);
         } catch(Exception e){
             return ResponseEntity.status(HttpStatus.NO_CONTENT).body(e.getMessage());
@@ -33,14 +36,11 @@ public class OrderController {
     }
 
     @PostMapping("/order/new")
-    public HttpStatus newOrder(@RequestBody OrderCreateReqDto orderCreateReqDto){
-        try{
-            log.info(orderCreateReqDto.toString());
-            orderService.save(orderCreateReqDto);
-            return HttpStatus.OK;
-        } catch(Exception e){
-            return HttpStatus.BAD_REQUEST;
-        }
+    public ResponseEntity<ResponseDto> newOrder(@RequestBody OrderReqDto orderReqDto, Principal principal){
+        Ordering ordering = orderService.save(orderReqDto, principal.getName());
+        return new ResponseEntity<>(
+                new ResponseDto(HttpStatus.CREATED, "order succesfully created", ordering.getId())
+                , HttpStatus.CREATED);
     }
 
     @GetMapping("/order/{id}/cancel")

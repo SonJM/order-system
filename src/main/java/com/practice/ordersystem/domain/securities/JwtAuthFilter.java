@@ -3,6 +3,7 @@ package com.practice.ordersystem.domain.securities;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import com.practice.ordersystem.domain.common.ErrorResponseDto;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -24,20 +25,23 @@ import java.util.List;
 @Component
 public class JwtAuthFilter extends GenericFilter {
 
+    @Value("${jwt.secretKey}")
+    private String secretKey;
+
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
 
         try {
             String bearerToken = ((HttpServletRequest)request).getHeader("Authorization");
             if(bearerToken!=null){
-                if(!bearerToken.substring(0,7).equals("Bearer ")){
+                if(!bearerToken.startsWith("Bearer ")){
                     throw new AuthenticationServiceException("token의 형식이 맞지 않습니다. ");
                 }
 //            bearer토큰에서 토큰 값만 추출
                 String token = bearerToken.substring(7);
-//            "mysecret"
+                System.out.println("Received Token: " + token);
 //            추출된 토큰을 검증 후 Authentication객체 생성
-                Claims claims = Jwts.parser().setSigningKey("mysecret").parseClaimsJws(token).getBody();
+                Claims claims = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody();
 //                Authentication객체를 생성하기 위한 UserDetails 생성
                 List<GrantedAuthority> authorities = new ArrayList<>();
                 authorities.add(new SimpleGrantedAuthority("ROLE_" + claims.get("role")));
@@ -46,7 +50,7 @@ public class JwtAuthFilter extends GenericFilter {
                 Authentication authentication = new UsernamePasswordAuthenticationToken
                         (userDetails, "", userDetails.getAuthorities());
                 SecurityContextHolder.getContext().setAuthentication(authentication);
-            }
+            } else SecurityContextHolder.getContext().setAuthentication(null);
 //            dofilter : filterahain에서 그다음 filtering으로 넘어가도록 하는 메소드
             chain.doFilter(request, response);
 
